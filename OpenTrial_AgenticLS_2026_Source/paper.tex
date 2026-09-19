@@ -13,7 +13,7 @@
 \usepackage{url}
 \usepackage[hidelinks]{hyperref}
 
-\title{OpenTrial: A Provenance-First Harness for Auditable Bayesian Clinical Trial Design}
+\title{A Provenance-First Harness for Auditable Bayesian Clinical Trial Design}
 
 \author{Anonymous Author(s)}
 
@@ -24,7 +24,7 @@
 \begin{abstract}
 Clinical trial design needs a clear record of which evidence changed the prior and whether the recommendation can be reproduced. We present OpenTrial, a provenance-first harness for Bayesian design of two-arm trials. It retrieves evidence from up to eight public sources and records every source outcome. Only records with an effect estimate and standard error enter the prior; context-only records remain visible but receive no statistical weight. The numerical path is deterministic and covers random-effects pooling, power, prior-predictive assurance, Bayesian decision criteria, Monte Carlo Type I error checks, and group-sequential designs. An optional language model can summarize completed results but cannot alter any calculation.
 
-We evaluated the offline workflow on a seeded Type 2 diabetes and HbA1c case. Four records representing 2,564 participants yielded a Normal prior with mean 0.5009 and standard deviation 0.0544. At 80 participants per arm, power was 0.885 and assurance was 0.873. A four-look O'Brien--Fleming design returned a Type I error estimate of 0.0234 against a nominal 0.025 and expected enrollment of 61.6 per arm under the alternative. Assurance fell to 0.183 under a skeptical prior, showing how strongly the recommendation depended on borrowed information. Independent implementations reproduced core deterministic results to at least nine decimal places. OpenTrial is a pattern for bounded agency in clinical methods, not a validated clinical tool.
+We evaluated the offline workflow on a seeded Type 2 diabetes and HbA1c case built from four synthetic evidence records. They yielded a Normal prior with mean 0.5009 and standard deviation 0.0544. At 80 participants per arm, power was 0.885 and assurance was 0.873. A four-look O'Brien--Fleming design returned a Type I error estimate of 0.0234 against a nominal 0.025 and expected enrollment of 61.6 per arm under the alternative. Assurance fell to 0.183 under a skeptical prior, showing how strongly the recommendation depended on borrowed information. Cross-checks against SciPy and statsmodels reproduced core deterministic results to at least nine decimal places. OpenTrial is a pattern for bounded agency in clinical methods, not a validated clinical tool.
 \end{abstract}
 
 \section{Introduction}
@@ -37,7 +37,7 @@ OpenTrial addresses this need with a constrained harness. The user selects sourc
 
 \section{Related work and design principle}
 
-Tool-using scientific agents are commonly judged by successful tool selection and task completion \citep{boiko2023,bran2024,ding2025}. Trial planning adds a different requirement. Assurance averages success over prior uncertainty \citep{ohagan2005}, Bayesian practice calls for prior sensitivity \citep{spiegelhalter2004}, and repeated looks must preserve the intended false-positive rate \citep{fda2019}. These need inspectable calculations, not optional prose.
+Tool-using scientific agents are commonly judged by successful tool selection and task completion \citep{boiko2023,bran2024,ding2025}. Biomedical agents such as Biomni and TxAgent bring the same pattern to biology and therapeutics \citep{huang2026,gao2025}, and language models have been applied to trial tasks such as patient matching and eligibility-criteria drafting \citep{jin2024,wang2023}. To our knowledge, none builds a design prior from retrieved evidence. Trial planning adds a different requirement. Assurance averages success over prior uncertainty \citep{ohagan2005}, Bayesian practice calls for prior sensitivity \citep{spiegelhalter2004}, and repeated looks must preserve the intended false-positive rate \citep{fda2019}. These need inspectable calculations, not optional prose.
 
 OpenTrial follows \emph{bounded agency by data type}. Retrieval can be broad, connector failures need not stop a run, and a model can explain output. Only typed quantitative records can enter the prior, however, and only tested functions can produce design metrics. The present system is therefore narrower than autonomous planning and easier to audit.
 
@@ -103,10 +103,10 @@ All numerical objects are complete before the optional language-model call. In t
 
 \subsection{Seeded case and fixed design}
 
-We used the repository's offline Type 2 diabetes case with change in HbA1c as a continuous endpoint. The assumed clinically relevant effect was \(0.5\), the endpoint standard deviation was \(1.0\), the one-sided Type I error was \(0.025\), and the target power was \(0.80\). Sample size was evaluated on a grid in increments of 20 per arm. Four quantitative records were available, all of which passed the admission rule (Table~\ref{tab:evidence}).
+We used the repository's offline Type 2 diabetes case with change in HbA1c as a continuous endpoint. Its four evidence records are synthetic: they imitate registry and literature entries and describe no real trial. The assumed clinically relevant effect was \(0.5\), the endpoint standard deviation was \(1.0\), the one-sided Type I error was \(0.025\), and the target power was \(0.80\). Sample size was evaluated on a grid in increments of 20 per arm. All four records passed the admission rule (Table~\ref{tab:evidence}).
 
 \begin{table}[H]
-\caption{Seeded evidence admitted to the prior. Weights use the DerSimonian--Laird fit; \(\widehat{\tau}^{\,2}=0\) in this case.}
+\caption{Synthetic seeded evidence admitted to the prior. Weights use the DerSimonian--Laird fit; \(\widehat{\tau}^{\,2}=0\) in this case.}
 \label{tab:evidence}
 \centering
 \small
@@ -123,7 +123,7 @@ PubMed             & 2022 & 0.43 & 0.09 & 980  & 36.6\% \\
 \end{tabular}
 \end{table}
 
-The records represented 2,564 participants. Cochran's \(Q\) was 1.52 on three degrees of freedom, so the estimated between-study variance was zero and the prior was \(N(0.5009,0.0544^2)\). Its precision was roughly equivalent to 675 participants per arm, a warning about the amount borrowed rather than a claim of exchangeability.
+The records carry a nominal total of 2,564 participants. Cochran's \(Q\) was 1.52 on three degrees of freedom, so the estimated between-study variance was zero and the prior was \(N(0.5009,0.0544^2)\). Its precision was roughly equivalent to 675 participants per arm, a warning about the amount borrowed rather than a claim of exchangeability.
 
 The continuous 80\% power crossing occurs near 63 participants per arm. With a grid step of 20, OpenTrial recommended 80, where power was 0.8854 and assurance was 0.8733. They are close because the prior is narrow and centered near the assumed effect.
 
@@ -149,13 +149,13 @@ Look & Information & \(N\)/arm & Boundary \(Z\) & Cumulative stop \\
 \end{tabular}
 \end{table}
 
-The separate null simulation returned a Type I error estimate of 0.0234 against the nominal 0.025. Expected enrollment under the alternative was 61.6 per arm, 23\% below the fixed maximum. The report does not retain Monte Carlo confidence intervals, so the Type I value is a diagnostic, not proof of exact control.
+The separate null simulation returned a Type I error estimate of 0.0234 against the nominal 0.025. Expected enrollment under the alternative was 61.6 per arm, 23\% below the fixed maximum, with power 0.877 against 0.885 for the fixed design. The report does not retain Monte Carlo confidence intervals, so the Type I value is a diagnostic, not proof of exact control.
 
-At \(n=80\), assurance was 0.873 under the evidence-derived prior, 0.710 under the enthusiastic scenario, 0.380 under the reference scenario, and 0.183 under the skeptical scenario. Skeptical predictive probability of success was 0.154. The design therefore looked strong only with substantial historical borrowing, a dependence that power at \(\delta=0.5\) did not expose.
+The skeptical and enthusiastic priors are \(N(0,s^2)\) and \(N(\delta,s^2)\) with \(s=\delta/z_{0.95}=0.304\) \citep{spiegelhalter2004}; the reference prior is \(N(0,1)\). At \(n=80\), assurance was 0.873 under the evidence-derived prior, 0.710 under the enthusiastic scenario, 0.380 under the reference scenario, and 0.183 under the skeptical scenario. Skeptical predictive probability of success was 0.154. The design therefore looked strong only with substantial historical borrowing, a dependence that power at \(\delta=0.5\) did not expose.
 
 \subsection{Numerical checks}
 
-The offline regression suite contains 100 tests and requires no network access or keys. Independent SciPy and statsmodels paths, closed forms, and numerical integration reproduced deterministic prior, power, assurance, and meta-analysis results to at least nine decimal places. These checks are separate from the renderer and narrative model.
+The offline regression suite contains 133 tests and requires no network access or keys. Independent SciPy and statsmodels paths, closed forms, and numerical integration reproduced deterministic prior, power, assurance, and meta-analysis results to at least nine decimal places. These checks are separate from the renderer and narrative model.
 
 Validation exposed a circular Type I check that reused calibration paths and could return the target by construction. Evaluation now uses separate draws. It also exposed a heterogeneity term that double-counted sampling error. Both errors had produced plausible summaries.
 
@@ -163,17 +163,15 @@ Validation exposed a circular Type I check that reused calibration paths and cou
 
 OpenTrial's main result is not the automation of standard formulas. It is the assignment of different trust levels to retrieval, statistical admission, calculation, and explanation. A connector may return useful context without a usable effect, and a model may clarify a report without choosing the prior. Every weighted datum has provenance, every exclusion has a reason, and headline numbers exist before narrative generation.
 
-The seeded case shows why assurance belongs beside power. Power was 0.885 at the selected effect, while assurance ranged from 0.183 to 0.873. The spread is the design question: reporting only the evidence-derived value would hide how much confidence came from historical information.
-
 The current system is not an autonomous trial designer. Source selection is user-guided, and the optional model neither plans tool calls nor changes the analysis. Future versions could propose searches, but that autonomy should be judged by evidence recall, duplicate detection, extraction accuracy, and design stability rather than report fluency.
 
 \subsection{Limitations and intended use}
 
-One seeded case cannot measure live-source coverage, connector drift, or contradictory literatures. Numeric fingerprinting may miss related publications or collapse distinct records with identical summaries. With four studies, \(\widehat{\tau}^{\,2}\) is weakly identified, and zero does not establish homogeneity.
+One synthetic seeded case cannot measure live-source coverage, extraction accuracy, connector drift, or contradictory literatures. Numeric fingerprinting may miss related publications or collapse distinct records with identical summaries. With four studies, \(\widehat{\tau}^{\,2}\) is weakly identified, and zero does not establish homogeneity.
 
-The continuous calculation assumes a Normal endpoint, equal allocation, and known standard deviation. The prototype lacks covariate adjustment, multiplicity, estimand changes, and missing-data models beyond dropout inflation. Sequential results lack stored simulation intervals. We have not run a prospective comparison with trial statisticians or a formal narrative-faithfulness study.
+The continuous calculation assumes a Normal endpoint, equal allocation, and known standard deviation. The prototype lacks covariate adjustment, multiplicity, estimand changes, and missing-data models beyond dropout inflation. We have not run a prospective comparison with trial statisticians or a formal narrative-faithfulness study.
 
-OpenTrial is a methods prototype, not a validated clinical tool. Enrollment, stopping rules, and regulatory strategy require independent statistical review. Broader benchmarks and expert evaluation remain necessary.
+OpenTrial is a methods prototype, not a validated clinical tool. Enrollment, stopping rules, and regulatory strategy require independent statistical review. Broader benchmarks remain necessary.
 
 \clearpage
 \bibliographystyle{plainnat}
